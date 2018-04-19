@@ -1,0 +1,221 @@
+ <!doctype html>
+<html lang="en">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="Generator" content="EditPlus®">
+  <meta name="Author" content="">
+  <meta name="Keywords" content="">
+  <meta name="Description" content="">
+  <title>五子棋</title>
+  <!--css样式 一件美丽的外衣 层叠样式表     margin:10px 20px;上下左右auto自动填充
+  显示 男人 女人 行内元素 块级元素-->
+  <style>
+  body{margin:0;}
+  /*start canvas*/
+  canvas{background:#fff;margin:100px auto; display:block;box-shadow:0px 0px 10px #000;}
+  /*end canvas*/
+  </style>
+ </head>
+ <body>
+ <!--start canvas-->
+  <canvas width="450" height="450" id="canvas"></canvas>
+   <!--end canvas-->
+
+ <!--网格线 原生js-->
+ <script>
+ var over = false;
+ //画画 画板 画笔 开始绘制
+ //第一步 获取画板
+ var chess=document.getElementById("canvas");
+ //获取权限上下文
+ var ctx=chess.getContext("2d");
+ //设置线条颜色
+ ctx.strokeStyle="#b2b2b2";
+ //绘制棋盘? 棋盘是由什么组成的？线条 两点 确定一条直线 
+ //绘制棋盘的方法
+ var drawChessBoard=function(){
+ for (var i=0;i<15;i++)
+ {
+   //起点 坐标
+   ctx.moveTo(15+i*30,15);
+   //终点
+   ctx.lineTo(15+i*30,435);
+   //连接两点
+   ctx.stroke();
+   //起点 坐标
+   ctx.moveTo(15,15+i*30);
+   //终点
+   ctx.lineTo(435,15+i*30);
+   //连接两点
+   ctx.stroke();
+  }
+ }
+drawChessBoard();
+
+
+var onStep=function(i,j,me){
+
+//绘制棋子  圆形  怎么去确定一个圆 圆心(坐标) 半径 π
+ //开始路径
+ ctx.beginPath();
+ ctx.arc(15+i*30,15+j*30,13,0,Math.PI*2);
+
+ 
+ ctx.stroke();
+ //结束路径
+ ctx.closePath();
+ //径向渐变
+var gradient = ctx.createRadialGradient(15+i*30+2,15+j*30-2,13,15+i*30+2,15+j*30-2,0);
+
+ if(me){
+	 //设置填充颜色
+   //ctx.fillStyle="#000";
+   gradient.addColorStop(0,"#0a0a0a");
+   gradient.addColorStop(1,"#636766");
+ }else{
+// ctx.fillStyle="#fff";
+   gradient.addColorStop(0,"#d1d1d1");
+   gradient.addColorStop(1,"#f9f9f9");
+ }
+ ctx.fillStyle=gradient;
+ //填充颜色
+ ctx.fill();
+}
+var me = true;
+//创建一个数组保存棋盘的落子情况
+var chessBoard=[];
+//初始化棋盘值
+for(var i=0;i<15;i++){
+   chessBoard[i]=[];
+   for(var j=0;j<15;j++){
+      chessBoard[i][j]=0;
+   }
+}
+//落棋子 点击棋盘
+chess.onclick=function(e){
+  if(over){return;}
+  if(!me){return;}
+	//获取鼠标点击的位置坐标 交叉点实际的坐标
+  var x = e.offsetX;
+  var y = e.offsetY;
+  var i=Math.floor(x/30);
+  var j=Math.floor(y/30);
+	if(chessBoard[i][j]==0){//等于零才能下棋
+  onStep(i,j,me);
+  chessBoard[i][j]=1;
+   for(var k=0;k<count;k++){
+   if(wins[i][j][j]){
+   myWin[k]++;
+   computerWin[k]=6;
+   if(myWin[k]==5){
+   alert("恭喜你，你赢了!");
+   over=true;//棋盘结束
+   }
+   }
+   }
+   if(!over){
+   //取反
+  me=!me;
+  computerAI();
+  }
+  }
+}
+
+//两种颜色 黑色 白色
+//onStep(1,2,true);
+//onStep(2,2,false);
+
+ /*15 15
+ 15 435
+ 
+
+ 45 15
+ 45 435
+
+ 75 15
+ 75 435
+ (15+30*n,15)
+ (15+30*n,435)
+ */
+
+ // 规则 什么样才能叫做赢
+ //统计所有横线 竖线 斜线 反斜线
+ //创建数组保存所有的赢法
+ var wins=[];
+ for(var i=0;i<15;i++){
+	 wins[i]=[];
+	 for(var j=0;j<15;j++){
+	   wins[i][j]=[];
+	 }
+ }
+ var count = 0;//计数
+//横线赢的算法
+/*
+   前两个表示位置，后面一个表示第几种算法
+   wins[0][0][0]
+      wins[0][1][0]
+	     wins[0][2][0]
+		    wins[0][3][0]
+			   wins[0][4][0]
+			   结束循环
+			      wins[0][1][1]
+				  wins[0][2][1]
+				  wins[0][3][1]
+				  wins[0][4][1]
+				  wins[0][5][1]
+
+*/
+
+for(var i=0;i<15;i++){
+   for(var j=0;j<11;j++){
+      for(var k=0;k<5;k++){
+	    wins[i][j+k][count]=true;
+	  }
+	  count++; 
+   }
+}
+//竖线赢
+for(var i=0;i<15;i++){
+   for(var j=0;j<11;j++){
+      for(var k=0;k<5;k++){
+	    wins[j+k][i][count]=true;
+	  }
+	  count++; 
+   }
+}
+//斜线赢
+for(var i=0;i<11;i++){
+   for(var j=0;j<11;j++){
+      for(var k=0;k<5;k++){
+	    wins[i+k][j+k][count]=true;
+	  }
+	  count++; 
+   }
+}
+//反斜线赢
+for(var i=0;i<11;i++){
+   for(var j=14;j>3;j--){
+      for(var k=0;k<5;k++){
+	    wins[i+k][j-k][count]=true;
+	  }
+	  count++; 
+   }
+}
+//15*15 572种赢法
+//console.log(count);
+
+//赢法统计数组
+var myWin=[];
+var computerWin=[];
+for(var i=0;i<count;i++){
+  myWin[i]=0;
+  computerWin[i]=0;
+}
+
+var computerAI=function(){
+alert("计算机AI");
+}
+
+ </script>	
+ </body>
+</html>
